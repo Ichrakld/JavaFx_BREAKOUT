@@ -1,5 +1,6 @@
 package com.breakout.controller;
 
+import com.breakout.audio.AudioManager;
 import com.breakout.model.GameModel;
 import com.breakout.model.GameState;
 import javafx.scene.input.KeyCode;
@@ -10,37 +11,49 @@ import java.util.Set;
 /**
  * Game Controller - MVC Pattern
  * Handles all user input and delegates to model
- * 
+ *
+ * Design Pattern: Controller (MVC)
+ * - Receives input events from view
+ * - Delegates business logic to model
+ * - Coordinates between input and game state
+ *
  * CONTROLS:
  * - Name Input: Type name, ENTER to confirm
- * - Menu: UP/DOWN to select level, ENTER to start
- * - Playing: LEFT/RIGHT to move, SPACE to launch
- * - P/ESCAPE: Pause/Resume
- * - M: Return to menu
+ * - Menu: UP/DOWN select level, ENTER start, L leaderboard
+ * - Playing: LEFT/RIGHT move, SPACE launch, P pause, M menu
+ * - Additional: F1 toggle music, F2 toggle SFX
  */
 public class GameController {
     private GameModel model;
+    private AudioManager audio;
     private Set<KeyCode> pressedKeys;
-    
+
     public GameController(GameModel model) {
         this.model = model;
+        this.audio = AudioManager.getInstance();
         this.pressedKeys = new HashSet<>();
     }
-    
+
     /**
      * Handle key press events
      */
     public void handleKeyPressed(KeyCode code) {
         pressedKeys.add(code);
-        
+
+        // Global controls (work in any state)
+        handleGlobalKeys(code);
+
+        // State-specific controls
         GameState currentState = model.getState();
-        
         switch (currentState) {
             case NAME_INPUT:
                 handleNameInputKey(code);
                 break;
             case MENU:
                 handleMenuKey(code);
+                break;
+            case LEADERBOARD:
+                handleLeaderboardKey(code);
                 break;
             case PLAYING:
                 handlePlayingKey(code);
@@ -59,7 +72,7 @@ public class GameController {
                 break;
         }
     }
-    
+
     /**
      * Handle key typed events (for name input)
      */
@@ -74,14 +87,14 @@ public class GameController {
             }
         }
     }
-    
+
     /**
      * Handle key release events
      */
     public void handleKeyReleased(KeyCode code) {
         pressedKeys.remove(code);
     }
-    
+
     /**
      * Update paddle movement based on pressed keys
      */
@@ -90,12 +103,12 @@ public class GameController {
             model.getPaddle().stop();
             return;
         }
-        
-        boolean leftPressed = pressedKeys.contains(KeyCode.LEFT) || 
-                              pressedKeys.contains(KeyCode.A);
-        boolean rightPressed = pressedKeys.contains(KeyCode.RIGHT) || 
-                               pressedKeys.contains(KeyCode.D);
-        
+
+        boolean leftPressed = pressedKeys.contains(KeyCode.LEFT) ||
+                pressedKeys.contains(KeyCode.A);
+        boolean rightPressed = pressedKeys.contains(KeyCode.RIGHT) ||
+                pressedKeys.contains(KeyCode.D);
+
         if (leftPressed && !rightPressed) {
             model.getPaddle().moveLeft();
         } else if (rightPressed && !leftPressed) {
@@ -104,9 +117,30 @@ public class GameController {
             model.getPaddle().stop();
         }
     }
-    
+
+    // ==================== GLOBAL KEYS ====================
+
+    /**
+     * Handle keys that work in any state
+     */
+    private void handleGlobalKeys(KeyCode code) {
+        switch (code) {
+            case F1:
+                audio.toggleMusic();
+                break;
+            case F2:
+                audio.toggleSfx();
+                break;
+            case F11:
+                // Toggle fullscreen (would need stage reference)
+                break;
+            default:
+                break;
+        }
+    }
+
     // ==================== STATE-SPECIFIC HANDLERS ====================
-    
+
     /**
      * Handle keys during name input
      */
@@ -119,11 +153,10 @@ public class GameController {
                 model.removeCharFromName();
                 break;
             default:
-                // Letter/number input handled by handleKeyTyped
                 break;
         }
     }
-    
+
     /**
      * Handle keys in menu (level selection)
      */
@@ -142,6 +175,9 @@ public class GameController {
                 if (model.canPlaySelectedLevel()) {
                     model.startSelectedLevel();
                 }
+                break;
+            case L:
+                model.showLeaderboard();
                 break;
             case DIGIT1:
                 selectLevelIfUnlocked(1);
@@ -162,7 +198,23 @@ public class GameController {
                 break;
         }
     }
-    
+
+    /**
+     * Handle keys in leaderboard view
+     */
+    private void handleLeaderboardKey(KeyCode code) {
+        switch (code) {
+            case ESCAPE:
+            case L:
+            case ENTER:
+            case SPACE:
+                model.hideLeaderboard();
+                break;
+            default:
+                break;
+        }
+    }
+
     /**
      * Select level by number if unlocked
      */
@@ -171,7 +223,7 @@ public class GameController {
             model.startLevel(level);
         }
     }
-    
+
     /**
      * Handle keys during gameplay
      */
@@ -191,7 +243,7 @@ public class GameController {
                 break;
         }
     }
-    
+
     /**
      * Handle keys when paused
      */
@@ -212,7 +264,7 @@ public class GameController {
                 break;
         }
     }
-    
+
     /**
      * Handle keys on game over screen
      */
@@ -229,7 +281,7 @@ public class GameController {
                 break;
         }
     }
-    
+
     /**
      * Handle keys on level complete screen
      */
@@ -246,7 +298,7 @@ public class GameController {
                 break;
         }
     }
-    
+
     /**
      * Handle keys on victory screen
      */
@@ -260,7 +312,7 @@ public class GameController {
                 break;
         }
     }
-    
+
     /**
      * Check if a specific key is currently pressed
      */

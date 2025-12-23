@@ -7,6 +7,8 @@ package com.breakout.model;
 public enum GameState {
     NAME_INPUT,     // Player entering their name
     MENU,           // Main menu with level selection
+    LEADERBOARD,    // Viewing high scores
+    SETTINGS,       // Audio and game settings
     PLAYING,        // Active gameplay
     PAUSED,         // Game paused
     GAME_OVER,      // Player lost all lives

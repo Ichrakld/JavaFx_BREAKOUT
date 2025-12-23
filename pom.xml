@@ -12,7 +12,13 @@
     <name>Breakout Enhanced</name>
     <description>
         A classic Breakout game built with JavaFX using MVC architecture.
-        Features: Pause/Resume, Menu system, Heart lives display, Multiple levels.
+        Features v3.0:
+        - Power-ups and Rewards system
+        - Penalties (ball doubling, falling bricks, speed increase)
+        - SQLite Database integration for persistent scores
+        - Background music and sound effects
+        - Custom background images per level
+        - Pause/Resume, Menu system, Heart lives display
     </description>
 
     <properties>
@@ -29,7 +35,11 @@
             <artifactId>javafx-controls</artifactId>
             <version>${javafx.version}</version>
         </dependency>
-
+        <dependency>
+            <groupId>mysql</groupId>
+            <artifactId>mysql-connector-java</artifactId>
+            <version>8.0.28</version>
+        </dependency>
         <!-- JavaFX Graphics -->
         <dependency>
             <groupId>org.openjfx</groupId>
@@ -43,9 +53,21 @@
             <artifactId>javafx-base</artifactId>
             <version>${javafx.version}</version>
         </dependency>
+        <!-- JavaFX Media for audio -->
+        <dependency>
+            <groupId>org.openjfx</groupId>
+            <artifactId>javafx-media</artifactId>
+            <version>21.0.2</version>
+        </dependency>
+
     </dependencies>
 
     <build>
+        <resources>
+            <resource>
+                <directory>src/main/resources</directory>
+            </resource>
+        </resources>
         <plugins>
             <!-- Maven Compiler Plugin -->
             <plugin>
