@@ -1,6 +1,7 @@
 package com.breakout.audio;
 
 import com.breakout.config.GameConfig;
+import javafx.scene.media.AudioClip;
 import javafx.scene.media.Media;
 import javafx.scene.media.MediaPlayer;
 import javafx.util.Duration;
@@ -8,32 +9,19 @@ import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 
-/**
- * Audio Manager for Breakout Game
- *
- * Design Pattern: Singleton + Facade
- * - Manages background music and sound effects
- * - Provides simple interface for audio playback
- * - Handles audio resource loading and caching
- *
- * Sound Categories:
- * - Background Music: Loops during gameplay
- * - Sound Effects: Short clips for game events
- */
 public class AudioManager {
     private static AudioManager instance;
     private GameConfig config;
 
-    // Media players
+    // CRITICAL: Maintain a strong reference to the media player
+    // to prevent the Garbage Collector from stopping the music.
     private MediaPlayer musicPlayer;
-    private Map<SoundEffect, MediaPlayer> sfxPlayers;
 
-    // Current music track
+    // Store sound effects in memory
+    private Map<SoundEffect, AudioClip> sfxCache;
     private MusicTrack currentTrack;
 
-    /**
-     * Available sound effects
-     */
+    // ==================== ENUMS ====================
     public enum SoundEffect {
         BALL_HIT_PADDLE("ball_paddle.wav"),
         BALL_HIT_BRICK("ball_brick.wav"),
@@ -50,17 +38,10 @@ public class AudioManager {
         BALL_LAUNCH("ball_launch.wav");
 
         private final String filename;
-
-        SoundEffect(String filename) {
-            this.filename = filename;
-        }
-
+        SoundEffect(String filename) { this.filename = filename; }
         public String getFilename() { return filename; }
     }
 
-    /**
-     * Available music tracks
-     */
     public enum MusicTrack {
         MENU("menu_music.mp3"),
         LEVEL_1("level1_music.mp3"),
@@ -72,99 +53,104 @@ public class AudioManager {
         GAME_OVER("gameover_music.mp3");
 
         private final String filename;
-
-        MusicTrack(String filename) {
-            this.filename = filename;
-        }
-
+        MusicTrack(String filename) { this.filename = filename; }
         public String getFilename() { return filename; }
 
         public static MusicTrack forLevel(int level) {
-            return switch (level) {
-                case 1 -> LEVEL_1;
-                case 2 -> LEVEL_2;
-                case 3 -> LEVEL_3;
-                case 4 -> LEVEL_4;
-                case 5 -> LEVEL_5;
-                default -> LEVEL_1;
-            };
+            if (level < 1) return LEVEL_1;
+            if (level > 5) return LEVEL_5;
+            return values()[level]; // Mapping index to enum
         }
     }
 
     private AudioManager() {
         this.config = GameConfig.getInstance();
-        this.sfxPlayers = new HashMap<>();
+        this.sfxCache = new HashMap<>();
+        System.out.println("AUDIO: Initializing Manager...");
         preloadSoundEffects();
     }
 
     public static AudioManager getInstance() {
-        if (instance == null) {
-            instance = new AudioManager();
-        }
+        if (instance == null) instance = new AudioManager();
         return instance;
     }
 
-    /**
-     * Preload sound effects for quick playback
-     */
+    // ==================== SOUND LOADING ====================
+
     private void preloadSoundEffects() {
         for (SoundEffect sfx : SoundEffect.values()) {
             try {
                 URL resource = getClass().getResource("/sounds/" + sfx.getFilename());
                 if (resource != null) {
-                    Media media = new Media(resource.toExternalForm());
-                    MediaPlayer player = new MediaPlayer(media);
-                    player.setVolume(config.getSfxVolume());
-                    sfxPlayers.put(sfx, player);
+                    AudioClip clip = new AudioClip(resource.toExternalForm());
+                    clip.setVolume(config.getSfxVolume());
+                    sfxCache.put(sfx, clip);
+                } else {
+                    System.err.println("AUDIO ERROR: SFX File missing: /sounds/" + sfx.getFilename());
                 }
             } catch (Exception e) {
-                // Sound file not found - will use fallback
-                System.out.println("Sound not found: " + sfx.getFilename() + " (using fallback)");
+                System.err.println("AUDIO ERROR: Could not load " + sfx.getFilename());
             }
         }
     }
 
     // ==================== MUSIC CONTROLS ====================
 
-    /**
-     * Play background music
-     */
     public void playMusic(MusicTrack track) {
-        if (!config.isMusicEnabled()) return;
-        if (currentTrack == track && musicPlayer != null &&
-                musicPlayer.getStatus() == MediaPlayer.Status.PLAYING) {
-            return; // Already playing this track
+        if (!config.isMusicEnabled()) {
+            System.out.println("AUDIO: Music disabled in config.");
+            return;
+        }
+
+        // Don't restart if it's already playing
+        if (currentTrack == track && musicPlayer != null && musicPlayer.getStatus() == MediaPlayer.Status.PLAYING) {
+            return;
         }
 
         stopMusic();
 
         try {
-            URL resource = getClass().getResource("/sounds/" + track.getFilename());
-            if (resource != null) {
-                Media media = new Media(resource.toExternalForm());
-                musicPlayer = new MediaPlayer(media);
-                musicPlayer.setVolume(config.getMusicVolume());
-                musicPlayer.setCycleCount(MediaPlayer.INDEFINITE); // Loop
-                musicPlayer.play();
-                currentTrack = track;
-            } else {
-                System.out.println("Music not found: " + track.getFilename());
+            // 1. debug path
+            String path = "/sounds/" + track.getFilename();
+            URL resource = getClass().getResource(path);
+
+            if (resource == null) {
+                System.err.println("AUDIO CRITICAL: Music file NOT FOUND at: " + path);
+                System.err.println("Check: src/main/resources/sounds/" + track.getFilename());
+                return;
             }
+
+            System.out.println("AUDIO: Loading music from: " + resource.toExternalForm());
+
+            // 2. Create Media
+            Media media = new Media(resource.toExternalForm());
+
+            // 3. Handle Media Errors (Corrupt MP3s)
+            media.setOnError(() -> System.err.println("AUDIO MEDIA ERROR: " + media.getError()));
+
+            // 4. Create Player
+            musicPlayer = new MediaPlayer(media);
+            musicPlayer.setOnError(() -> System.err.println("AUDIO PLAYER ERROR: " + musicPlayer.getError()));
+
+            musicPlayer.setVolume(config.getMusicVolume());
+            musicPlayer.setCycleCount(MediaPlayer.INDEFINITE); // Loop forever
+
+            // 5. Play
+            musicPlayer.play();
+            currentTrack = track;
+            System.out.println("AUDIO: Playing " + track.name());
+
         } catch (Exception e) {
-            System.out.println("Cannot play music: " + e.getMessage());
+            System.err.println("AUDIO EXCEPTION: " + e.getMessage());
+            e.printStackTrace();
         }
     }
 
-    /**
-     * Play music for specific level
-     */
     public void playLevelMusic(int level) {
+        System.out.println("AUDIO: Requesting music for Level " + level);
         playMusic(MusicTrack.forLevel(level));
     }
 
-    /**
-     * Stop current music
-     */
     public void stopMusic() {
         if (musicPlayer != null) {
             musicPlayer.stop();
@@ -174,187 +160,55 @@ public class AudioManager {
         }
     }
 
-    /**
-     * Pause music
-     */
-    public void pauseMusic() {
-        if (musicPlayer != null) {
-            musicPlayer.pause();
-        }
-    }
+    // ==================== CONTROLS ====================
 
-    /**
-     * Resume music
-     */
-    public void resumeMusic() {
-        if (musicPlayer != null && config.isMusicEnabled()) {
-            musicPlayer.play();
-        }
-    }
+    public void pauseMusic() { if (musicPlayer != null) musicPlayer.pause(); }
+    public void resumeMusic() { if (musicPlayer != null && config.isMusicEnabled()) musicPlayer.play(); }
 
-    /**
-     * Set music volume
-     */
     public void setMusicVolume(double volume) {
         config.setMusicVolume(volume);
-        if (musicPlayer != null) {
-            musicPlayer.setVolume(volume);
-        }
+        if (musicPlayer != null) musicPlayer.setVolume(volume);
     }
 
-    /**
-     * Toggle music on/off
-     */
     public void toggleMusic() {
-        config.setMusicEnabled(!config.isMusicEnabled());
-        if (config.isMusicEnabled()) {
-            resumeMusic();
+        boolean newState = !config.isMusicEnabled();
+        config.setMusicEnabled(newState);
+        System.out.println("AUDIO: Toggled Music to " + newState);
+        if (newState) {
+            if (currentTrack != null) playMusic(currentTrack); // Restart track
+            else resumeMusic();
         } else {
             pauseMusic();
         }
     }
 
-    // ==================== SOUND EFFECTS ====================
+    // ==================== SFX CONTROLS ====================
 
-    /**
-     * Play a sound effect
-     */
     public void playSfx(SoundEffect sfx) {
         if (!config.isSoundEffectsEnabled()) return;
-
-        MediaPlayer player = sfxPlayers.get(sfx);
-        if (player != null) {
-            player.stop();
-            player.seek(Duration.ZERO);
-            player.setVolume(config.getSfxVolume());
-            player.play();
-        } else {
-            // Generate simple beep as fallback
-            playFallbackSound(sfx);
-        }
+        AudioClip clip = sfxCache.get(sfx);
+        if (clip != null) clip.play(config.getSfxVolume());
     }
 
-    /**
-     * Play fallback sound when audio file not available
-     */
-    private void playFallbackSound(SoundEffect sfx) {
-        // In a real implementation, you could use Java's built-in beep
-        // or generate a simple tone using AudioSystem
-        System.out.println("♪ " + sfx.name());
-    }
+    public void setSfxVolume(double volume) { config.setSfxVolume(volume); }
+    public void toggleSfx() { config.setSoundEffectsEnabled(!config.isSoundEffectsEnabled()); }
 
-    /**
-     * Set sound effects volume
-     */
-    public void setSfxVolume(double volume) {
-        config.setSfxVolume(volume);
-        for (MediaPlayer player : sfxPlayers.values()) {
-            player.setVolume(volume);
-        }
-    }
+    // ==================== HELPERS ====================
 
-    /**
-     * Toggle sound effects on/off
-     */
-    public void toggleSfx() {
-        config.setSoundEffectsEnabled(!config.isSoundEffectsEnabled());
-    }
+    public void playBrickHit() { playSfx(SoundEffect.BALL_HIT_BRICK); }
+    public void playBrickDestroy() { playSfx(SoundEffect.BRICK_DESTROY); }
+    public void playPaddleHit() { playSfx(SoundEffect.BALL_HIT_PADDLE); }
+    public void playPowerUp() { playSfx(SoundEffect.POWER_UP_COLLECT); }
+    public void playPenalty() { playSfx(SoundEffect.PENALTY_COLLECT); }
+    public void playLifeLost() { playSfx(SoundEffect.LIFE_LOST); }
 
-    // ==================== CONVENIENCE METHODS ====================
+    public void playLevelComplete() { stopMusic(); playSfx(SoundEffect.LEVEL_COMPLETE); }
+    public void playGameOver() { stopMusic(); playSfx(SoundEffect.GAME_OVER); }
+    public void playVictory() { stopMusic(); playSfx(SoundEffect.VICTORY); playMusic(MusicTrack.VICTORY); }
 
-    /**
-     * Play brick hit sound
-     */
-    public void playBrickHit() {
-        playSfx(SoundEffect.BALL_HIT_BRICK);
-    }
+    public void dispose() { stopMusic(); sfxCache.clear(); }
 
-    /**
-     * Play brick destroy sound
-     */
-    public void playBrickDestroy() {
-        playSfx(SoundEffect.BRICK_DESTROY);
-    }
-
-    /**
-     * Play paddle hit sound
-     */
-    public void playPaddleHit() {
-        playSfx(SoundEffect.BALL_HIT_PADDLE);
-    }
-
-    /**
-     * Play power-up collect sound
-     */
-    public void playPowerUp() {
-        playSfx(SoundEffect.POWER_UP_COLLECT);
-    }
-
-    /**
-     * Play penalty sound
-     */
-    public void playPenalty() {
-        playSfx(SoundEffect.PENALTY_COLLECT);
-    }
-
-    /**
-     * Play level complete sound
-     */
-    public void playLevelComplete() {
-        stopMusic();
-        playSfx(SoundEffect.LEVEL_COMPLETE);
-    }
-
-    /**
-     * Play game over sound
-     */
-    public void playGameOver() {
-        stopMusic();
-        playSfx(SoundEffect.GAME_OVER);
-    }
-
-    /**
-     * Play victory sound
-     */
-    public void playVictory() {
-        stopMusic();
-        playSfx(SoundEffect.VICTORY);
-        playMusic(MusicTrack.VICTORY);
-    }
-
-    /**
-     * Play life lost sound
-     */
-    public void playLifeLost() {
-        playSfx(SoundEffect.LIFE_LOST);
-    }
-
-    /**
-     * Cleanup resources
-     */
-    public void dispose() {
-        stopMusic();
-        for (MediaPlayer player : sfxPlayers.values()) {
-            player.dispose();
-        }
-        sfxPlayers.clear();
-    }
-
-    // ==================== STATUS METHODS ====================
-
-    public boolean isMusicPlaying() {
-        return musicPlayer != null && musicPlayer.getStatus() == MediaPlayer.Status.PLAYING;
-    }
-
-    public MusicTrack getCurrentTrack() {
-        return currentTrack;
-    }
-
-    public boolean isMusicEnabled() {
-        return config.isMusicEnabled();
-    }
-
-    public boolean isSfxEnabled() {
-        return config.isSoundEffectsEnabled();
-    }
+    // ==================== GETTERS (REQUIRED FOR VIEW) ====================
+    public boolean isMusicEnabled() { return config.isMusicEnabled(); }
+    public boolean isSfxEnabled() { return config.isSoundEffectsEnabled(); }
 }

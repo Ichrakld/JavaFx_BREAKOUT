@@ -1,5 +1,6 @@
 package com.breakout.model;
 
+import com.breakout.audio.AudioManager;
 import com.breakout.config.GameConfig;
 
 /**
@@ -83,15 +84,21 @@ public class Ball {
         if (x - radius <= 0) {
             x = radius;
             dx = Math.abs(dx);
+            // PLAY SOUND HERE
+            AudioManager.getInstance().playSfx(AudioManager.SoundEffect.BALL_HIT_WALL);
         } else if (x + radius >= config.getWindowWidth()) {
             x = config.getWindowWidth() - radius;
             dx = -Math.abs(dx);
+            // PLAY SOUND HERE
+            AudioManager.getInstance().playSfx(AudioManager.SoundEffect.BALL_HIT_WALL);
         }
 
         // Ceiling collision
         if (y - radius <= 0) {
             y = radius;
             dy = Math.abs(dy);
+            // PLAY SOUND HERE
+            AudioManager.getInstance().playSfx(AudioManager.SoundEffect.BALL_HIT_WALL);
         }
     }
 

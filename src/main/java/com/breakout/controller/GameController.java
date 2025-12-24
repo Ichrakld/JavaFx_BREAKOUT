@@ -85,6 +85,7 @@ public class GameController {
                     model.addCharToName(c);
                 }
             }
+            AudioManager.getInstance().playSfx(AudioManager.SoundEffect.MENU_SELECT);
         }
     }
 

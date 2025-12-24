@@ -1,15 +1,15 @@
-C:\Users\ichra\Downloads\BreakoutGame (1)\BreakoutGame1\src\main\java\com\breakout\controller\GameController.java
-C:\Users\ichra\Downloads\BreakoutGame (1)\BreakoutGame1\src\main\java\com\breakout\Main.java
-C:\Users\ichra\Downloads\BreakoutGame (1)\BreakoutGame1\src\main\java\com\breakout\model\PlayerProfile.java
-C:\Users\ichra\Downloads\BreakoutGame (1)\BreakoutGame1\src\main\java\com\breakout\model\Penalty.java
-C:\Users\ichra\Downloads\BreakoutGame (1)\BreakoutGame1\src\main\java\com\breakout\model\FallingBrick.java
-C:\Users\ichra\Downloads\BreakoutGame (1)\BreakoutGame1\src\main\java\com\breakout\model\Paddle.java
-C:\Users\ichra\Downloads\BreakoutGame (1)\BreakoutGame1\src\main\java\com\breakout\model\PowerUp.java
-C:\Users\ichra\Downloads\BreakoutGame (1)\BreakoutGame1\src\main\java\com\breakout\database\DatabaseManager.java
-C:\Users\ichra\Downloads\BreakoutGame (1)\BreakoutGame1\src\main\java\com\breakout\config\GameConfig.java
-C:\Users\ichra\Downloads\BreakoutGame (1)\BreakoutGame1\src\main\java\com\breakout\model\GameState.java
-C:\Users\ichra\Downloads\BreakoutGame (1)\BreakoutGame1\src\main\java\com\breakout\model\Brick.java
-C:\Users\ichra\Downloads\BreakoutGame (1)\BreakoutGame1\src\main\java\com\breakout\model\GameModel.java
-C:\Users\ichra\Downloads\BreakoutGame (1)\BreakoutGame1\src\main\java\com\breakout\model\Ball.java
-C:\Users\ichra\Downloads\BreakoutGame (1)\BreakoutGame1\src\main\java\com\breakout\view\GameView.java
-C:\Users\ichra\Downloads\BreakoutGame (1)\BreakoutGame1\src\main\java\com\breakout\audio\AudioManager.java
+C:\Users\Lenovo\OneDrive - Ecole Marocaine des Sciences de l'Ingénieur\Bureau\4IIR_7thSemester\Java avancée\JavaFx_BREAKOUT\src\main\java\com\breakout\model\Brick.java
+C:\Users\Lenovo\OneDrive - Ecole Marocaine des Sciences de l'Ingénieur\Bureau\4IIR_7thSemester\Java avancée\JavaFx_BREAKOUT\src\main\java\com\breakout\Main.java
+C:\Users\Lenovo\OneDrive - Ecole Marocaine des Sciences de l'Ingénieur\Bureau\4IIR_7thSemester\Java avancée\JavaFx_BREAKOUT\src\main\java\com\breakout\model\FallingBrick.java
+C:\Users\Lenovo\OneDrive - Ecole Marocaine des Sciences de l'Ingénieur\Bureau\4IIR_7thSemester\Java avancée\JavaFx_BREAKOUT\src\main\java\com\breakout\model\Ball.java
+C:\Users\Lenovo\OneDrive - Ecole Marocaine des Sciences de l'Ingénieur\Bureau\4IIR_7thSemester\Java avancée\JavaFx_BREAKOUT\src\main\java\com\breakout\view\GameView.java
+C:\Users\Lenovo\OneDrive - Ecole Marocaine des Sciences de l'Ingénieur\Bureau\4IIR_7thSemester\Java avancée\JavaFx_BREAKOUT\src\main\java\com\breakout\model\PlayerProfile.java
+C:\Users\Lenovo\OneDrive - Ecole Marocaine des Sciences de l'Ingénieur\Bureau\4IIR_7thSemester\Java avancée\JavaFx_BREAKOUT\src\main\java\com\breakout\model\GameState.java
+C:\Users\Lenovo\OneDrive - Ecole Marocaine des Sciences de l'Ingénieur\Bureau\4IIR_7thSemester\Java avancée\JavaFx_BREAKOUT\src\main\java\com\breakout\audio\AudioManager.java
+C:\Users\Lenovo\OneDrive - Ecole Marocaine des Sciences de l'Ingénieur\Bureau\4IIR_7thSemester\Java avancée\JavaFx_BREAKOUT\src\main\java\com\breakout\database\DatabaseManager.java
+C:\Users\Lenovo\OneDrive - Ecole Marocaine des Sciences de l'Ingénieur\Bureau\4IIR_7thSemester\Java avancée\JavaFx_BREAKOUT\src\main\java\com\breakout\model\Penalty.java
+C:\Users\Lenovo\OneDrive - Ecole Marocaine des Sciences de l'Ingénieur\Bureau\4IIR_7thSemester\Java avancée\JavaFx_BREAKOUT\src\main\java\com\breakout\model\PowerUp.java
+C:\Users\Lenovo\OneDrive - Ecole Marocaine des Sciences de l'Ingénieur\Bureau\4IIR_7thSemester\Java avancée\JavaFx_BREAKOUT\src\main\java\com\breakout\config\GameConfig.java
+C:\Users\Lenovo\OneDrive - Ecole Marocaine des Sciences de l'Ingénieur\Bureau\4IIR_7thSemester\Java avancée\JavaFx_BREAKOUT\src\main\java\com\breakout\model\Paddle.java
+C:\Users\Lenovo\OneDrive - Ecole Marocaine des Sciences de l'Ingénieur\Bureau\4IIR_7thSemester\Java avancée\JavaFx_BREAKOUT\src\main\java\com\breakout\controller\GameController.java
+C:\Users\Lenovo\OneDrive - Ecole Marocaine des Sciences de l'Ingénieur\Bureau\4IIR_7thSemester\Java avancée\JavaFx_BREAKOUT\src\main\java\com\breakout\model\GameModel.java

@@ -63,7 +63,7 @@ public class GameConfig {
     private final int dbPort = 3306;
     private final String dbName = "breakout_game";
     private final String dbUser = "root";
-    private final String dbPassword = "ichrak";  // Change this to your MySQL password
+    private final String dbPassword = "";  // Change this to your MySQL password
 
     private GameConfig() {}
 
